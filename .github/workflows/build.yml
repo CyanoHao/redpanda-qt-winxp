@@ -1,0 +1,95 @@
+name: Build
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    name: Build
+    runs-on: windows-2019
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Prepare toolchain
+        run: |
+          ls -al
+          pwd
+
+          curl -LO https://github.com/niXman/mingw-builds-binaries/releases/download/8.5.0-rt_v10-rev0/i686-8.5.0-release-posix-dwarf-rt_v10-rev0.7z
+          7z x i686-8.5.0-release-posix-dwarf-rt_v10-rev0.7z
+          mv mingw32 /
+
+          curl -LO https://github.com/niXman/mingw-builds-binaries/releases/download/8.5.0-rt_v10-rev0/x86_64-8.5.0-release-posix-seh-rt_v10-rev0.7z
+          7z x x86_64-8.5.0-release-posix-seh-rt_v10-rev0.7z
+          mv mingw64 /
+
+      - name: Prepare source
+        run: |
+          ls -al
+          pwd
+
+          curl -LO https://download.qt.io/new_archive/qt/5.6/5.6.3/submodules/qtbase-opensource-src-5.6.3.tar.xz
+          tar xf qtbase-opensource-src-5.6.3.tar.xz
+          tar xf qtbase-opensource-src-5.6.3.tar.xz qtbase-opensource-src-5.6.3/configure.exe
+          pushd qtbase-opensource-src-5.6.3
+          patch --forward --strip=1 --input=../qtbase-5.6.3-redpanda.patch
+          popd
+
+          curl -LO https://download.qt.io/new_archive/qt/5.6/5.6.3/submodules/qtsvg-opensource-src-5.6.3.tar.xz
+          tar xf qtsvg-opensource-src-5.6.3.tar.xz
+
+          curl -LO https://download.qt.io/new_archive/qt/5.6/5.6.3/submodules/qttools-opensource-src-5.6.3.tar.xz
+          tar xf qttools-opensource-src-5.6.3.tar.xz
+
+      - name: Build i686
+        run: |
+          ls -al
+          pwd
+          echo $PATH
+
+          export PATH=/mingw32/bin:$PATH
+
+          mkdir build-qtbase-i686 && pushd build-qtbase-i686
+          ../qtbase-opensource-src-5.6.3/configure.bat \
+            -prefix /Qt/5.6.3/mingw85_32-redpanda -release \
+            -opensource -confirm-license \
+            -no-use-gold-linker -static -static-runtime -platform win32-g++ -target xp \
+            -opengl desktop -no-angle -iconv -gnu-iconv -no-icu -qt-zlib -qt-pcre -qt-libpng -qt-libjpeg -qt-freetype -no-fontconfig -qt-harfbuzz -no-ssl -no-openssl \
+            -nomake examples -nomake tests -nomake tools
+          mingw32-make -j$(nproc)
+          mingw32-make install
+          popd
+
+          export PATH=/Qt/5.6.3/mingw85_32-redpanda/bin:$PATH
+
+          mkdir build-qtsvg-i686 && pushd build-qtsvg-i686
+          qmake ../qtsvg-opensource-src-5.6.3
+          mingw32-make -j$(nproc)
+          mingw32-make install
+          popd
+
+          mkdir build-qtsvg-i686 && pushd build-qtsvg-i686
+          qmake ../qtsvg-opensource-src-5.6.3
+          mingw32-make -j$(nproc)
+          mingw32-make install
+          popd
+
+          ls -al
+          pwd
+
+          7z a -t7z -m0=LZMA2:d=64m:fb=273 -ms redpanda-qt5.6.3-i686.7z /Qt/5.6.3/mingw85_32-redpanda
+
+      - name: Upload i686
+        uses: actions/upload-artifact@v2
+        with:
+          name: Qt 5.6.3 i686
+          path: redpanda-qt5.6.3-i686.7z
+
+      - name: Build x86_64
+        run: |
+          ls -al
+          pwd
+          echo $PATH
