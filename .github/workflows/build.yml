@@ -15,11 +15,11 @@ jobs:
 
       - name: Prepare toolchain
         run: |
-          curl -LO https://github.com/niXman/mingw-builds-binaries/releases/download/8.5.0-rt_v10-rev0/i686-8.5.0-release-posix-dwarf-rt_v10-rev0.7z
-          7z x i686-8.5.0-release-posix-dwarf-rt_v10-rev0.7z
+          curl -LO https://download.qt.io/online/qtsdkrepository/windows_x86/desktop/tools_mingw/qt.tools.win32_mingw810/8.1.0-1-202004170606i686-8.1.0-release-posix-dwarf-rt_v6-rev0.7z
+          7z x 8.1.0-1-202004170606i686-8.1.0-release-posix-dwarf-rt_v6-rev0.7z
 
-          curl -LO https://github.com/niXman/mingw-builds-binaries/releases/download/8.5.0-rt_v10-rev0/x86_64-8.5.0-release-posix-seh-rt_v10-rev0.7z
-          7z x x86_64-8.5.0-release-posix-seh-rt_v10-rev0.7z
+          curl -LO https://download.qt.io/online/qtsdkrepository/windows_x86/desktop/tools_mingw/qt.tools.win64_mingw810/8.1.0-1-202004170606x86_64-8.1.0-release-posix-seh-rt_v6-rev0.7z
+          7z x 8.1.0-1-202004170606x86_64-8.1.0-release-posix-seh-rt_v6-rev0.7z
 
       - name: Prepare source
         run: |
@@ -42,7 +42,7 @@ jobs:
           pwd
           echo $PATH
 
-          export PATH=$GITHUB_WORKSPACE/mingw32/bin:$PATH
+          export PATH="$GITHUB_WORKSPACE/Tools/mingw810_32/bin:$PATH"
 
           echo $PATH
 
@@ -57,7 +57,7 @@ jobs:
           mingw32-make install
           popd
 
-          export PATH=$GITHUB_WORKSPACE/Qt5.6.3/mingw85_32-redpanda/bin:$PATH
+          export PATH="$GITHUB_WORKSPACE/Qt5.6.3/mingw85_32-redpanda/bin:$PATH"
 
           mkdir build-qtsvg-i686 && pushd build-qtsvg-i686
           qmake ../qtsvg-opensource-src-5.6.3
