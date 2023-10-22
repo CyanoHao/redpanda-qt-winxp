@@ -111,4 +111,11 @@ jobs:
         with:
           name: Qt 5.6.3 x86_64
           path: redpanda-qt5.6.3-x86_64.7z
-  
+
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: |
+            redpanda-qt5.6.3-i686.7z
+            redpanda-qt5.6.3-x86_64.7z
