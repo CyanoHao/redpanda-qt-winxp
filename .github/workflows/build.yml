@@ -39,10 +39,11 @@ jobs:
       - name: Build i686
         run: |
           export PATH="$GITHUB_WORKSPACE/Tools/mingw810_32/bin:$PATH"
+          PREFIX=$GITHUB_WORKSPACE/Qt5.6.3/mingw81_32-redpanda
 
           mkdir build-qtbase-i686 && pushd build-qtbase-i686
           ../qtbase-opensource-src-5.6.3/configure.bat \
-            -prefix $GITHUB_WORKSPACE/Qt5.6.3/mingw81_32-redpanda -release \
+            -prefix $PREFIX -release \
             -opensource -confirm-license \
             -no-use-gold-linker -static -static-runtime -platform win32-g++ -target xp \
             -opengl desktop -no-angle -iconv -gnu-iconv -no-icu -qt-zlib -qt-pcre -qt-libpng -qt-libjpeg -qt-freetype -no-fontconfig -qt-harfbuzz -no-ssl -no-openssl \
@@ -51,7 +52,7 @@ jobs:
           mingw32-make install
           popd
 
-          export PATH="$GITHUB_WORKSPACE/Qt5.6.3/mingw85_32-redpanda/bin:$PATH"
+          export PATH="$PREFIX/bin:$PATH"
 
           mkdir build-qtsvg-i686 && pushd build-qtsvg-i686
           qmake ../qtsvg-opensource-src-5.6.3
@@ -65,7 +66,7 @@ jobs:
           mingw32-make install
           popd
 
-          7z a -t7z -m0=LZMA2:d=64m:fb=273 -ms redpanda-qt5.6.3-i686.7z $GITHUB_WORKSPACE/Qt5.6.3/mingw81_32-redpanda
+          7z a -t7z -m0=LZMA2:d=64m:fb=273 -ms redpanda-qt5.6.3-i686.7z $PREFIX
 
       - name: Upload i686
         uses: actions/upload-artifact@v2
