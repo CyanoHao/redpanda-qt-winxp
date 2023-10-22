@@ -76,6 +76,39 @@ jobs:
 
       - name: Build x86_64
         run: |
-          ls -al
-          pwd
-          echo $PATH
+          export PATH="$GITHUB_WORKSPACE/Tools/mingw810_64/bin:$PATH"
+          PREFIX=$GITHUB_WORKSPACE/Qt5.6.3/mingw81_64-redpanda
+
+          mkdir build-qtbase-x86_64 && pushd build-qtbase-x86_64
+          ../qtbase-opensource-src-5.6.3/configure.bat \
+            -prefix $PREFIX -release \
+            -opensource -confirm-license \
+            -no-use-gold-linker -static -static-runtime -platform win32-g++ -target xp \
+            -opengl desktop -no-angle -iconv -gnu-iconv -no-icu -qt-zlib -qt-pcre -qt-libpng -qt-libjpeg -qt-freetype -no-fontconfig -qt-harfbuzz -no-ssl -no-openssl \
+            -nomake examples -nomake tests -nomake tools
+          mingw32-make -j$(nproc)
+          mingw32-make install
+          popd
+
+          export PATH="$PREFIX/bin:$PATH"
+
+          mkdir build-qtsvg-x86_64 && pushd build-qtsvg-x86_64
+          qmake ../qtsvg-opensource-src-5.6.3
+          mingw32-make -j$(nproc)
+          mingw32-make install
+          popd
+
+          mkdir build-qttools-x86_64 && pushd build-qttools-x86_64
+          qmake ../qttools-opensource-src-5.6.3
+          mingw32-make -j$(nproc)
+          mingw32-make install
+          popd
+
+          7z a -t7z -m0=LZMA2:d=64m:fb=273 -ms redpanda-qt5.6.3-x86_64.7z $PREFIX
+
+      - name: Upload x86_64
+        uses: actions/upload-artifact@v2
+        with:
+          name: Qt 5.6.3 x86_64
+          path: redpanda-qt5.6.3-x86_64.7z
+  
